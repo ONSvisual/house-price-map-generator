@@ -44,9 +44,11 @@ cp -r z4-8/ tiles
 cp -r z9/ tiles
 cp -r z10-13/ tiles
 
+echo 'downloading LSOA boundaries'
 #download generalised lsoa geojson
 wget https://opendata.arcgis.com/datasets/da831f80764346889837c72508f046fa_2.geojson
 
+echo 'joining house prices to LSOA boundaries'
 #drop fields we don't need
 ogr2ogr -f geojson -t_srs crs:84 -sql "SELECT lsoa11cd, lsoa11nm FROM da831f80764346889837c72508f046fa_2" bounds.geojson da831f80764346889837c72508f046fa_2.geojson
 
@@ -56,8 +58,15 @@ mapshaper-xl bounds.geojson -join houseprice.csv keys=lsoa11cd,LSOAcode field-ty
 #drop some more fields
 ogr2ogr -f geojson -t_srs crs:84 -sql "SELECT lsoa11cd, lsoa11nm, houseprice FROM boundar" boundaries.geojson boundar.geojson
 
+#tidy up
+rm bounds.geojson
+rm boundar.geojson
+
+echo 'making LSOA boundaries tiles'
 #makes tiles for the lsoa boundaries
 tippecanoe --minimum-zoom=10 --maximum-zoom=13 --output-to-directory boundaries --no-tile-size-limit boundaries.geojson
 
+echo 'zipping up files, almost done'
 #zip the files up for EC2
 zip -r tiles.zip tiles boundaries
+echo 'DONE!'
