@@ -1,14 +1,17 @@
 #!/bin/bash
 # bash script to generate tiles for house prices for small areas
-# to run houseprice.sh
+# to run use sh houseprice.sh $1
 
 
 #You need the
 
-#prepare your houseprice.csv
-#remove top rows
+#prepare your csv
+#remove top rows so it's just the column headers
 #rename house price column as houseprice
-#remove unnecessary columns, only need LSOAcode, LSOAname and houseprice
+#remove unnecessary columns, only need LSOAcode, LSOAname and a 3rd column
+
+column = $(head -n 1 $1 | cut -d"," -f3)
+FILEN=`echo $1 | sed 's/\.csv$//'`
 
 #unzip the buildings
 echo 'unzipping buildings'
@@ -17,7 +20,7 @@ unzip OSdistrictByLSOA.zip
 
 #join buildings to house price data
 echo 'joining buildings to house price data'
-mapshaper-xl OSdistrictByLSOA.shp -join houseprice.csv keys=lsoa11cd,LSOAcode field-types=LSOAcode:str,houseprice:num -o joined.shp
+mapshaper-xl OSdistrictByLSOA.shp -join $1 keys=lsoa11cd,LSOAcode field-types=LSOAcode:str,$column:num -o joined.shp
 
 
 #reduce precisions
@@ -53,10 +56,12 @@ echo 'joining house prices to LSOA boundaries'
 ogr2ogr -f geojson -t_srs crs:84 -sql "SELECT lsoa11cd, lsoa11nm FROM da831f80764346889837c72508f046fa_2" bounds.geojson da831f80764346889837c72508f046fa_2.geojson
 
 #join house prices to boundaries too
-mapshaper-xl bounds.geojson -join houseprice.csv keys=lsoa11cd,LSOAcode field-types=LSOAcode:str,houseprice:num -o boundar.geojson
+mapshaper-xl bounds.geojson -join $1 keys=lsoa11cd,LSOAcode field-types=LSOAcode:str,$column:num -o boundar.geojson
+
+select =
 
 #drop some more fields
-ogr2ogr -f geojson -t_srs crs:84 -sql "SELECT lsoa11cd, lsoa11nm, houseprice FROM boundar" boundaries.geojson boundar.geojson
+ogr2ogr -f geojson -t_srs crs:84 -sql "SELECT lsoa11cd, lsoa11nm," $column "FROM boundar" boundaries.geojson boundar.geojson
 
 #tidy up
 rm bounds.geojson
