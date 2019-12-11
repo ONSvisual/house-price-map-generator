@@ -1,6 +1,6 @@
 Fancy script to generate tiles for the House Price and Small Area map.
 
-Prequistives: mapshaper, gdal, tippecanoe
+Prequistives: mapshaper, gdal, tippecanoe, wget
 
 You need a .csv with the house price column named as `houseprice` and to have the first row as column names. 
 
