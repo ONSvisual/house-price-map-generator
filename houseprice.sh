@@ -46,11 +46,11 @@ cp -r z10-13/ tiles
 
 echo 'downloading LSOA boundaries'
 #download generalised lsoa geojson
-wget https://opendata.arcgis.com/datasets/da831f80764346889837c72508f046fa_2.geojson
+wget https://opendata.arcgis.com/datasets/007577eeb8e34c62a1844df090a93128_0.geojson
 
 echo 'joining house prices to LSOA boundaries'
 #drop fields we don't need
-ogr2ogr -f geojson -t_srs crs:84 -sql "SELECT lsoa11cd, lsoa11nm FROM da831f80764346889837c72508f046fa_2" bounds.geojson da831f80764346889837c72508f046fa_2.geojson
+ogr2ogr -f geojson -t_srs crs:84 -sql "SELECT lsoa11cd, lsoa11nm FROM d007577eeb8e34c62a1844df090a93128_0" bounds.geojson d007577eeb8e34c62a1844df090a93128_0.geojson
 
 #join house prices to boundaries too
 mapshaper-xl bounds.geojson -join houseprice.csv keys=lsoa11cd,LSOAcode field-types=LSOAcode:str,houseprice:num -o boundar.geojson
